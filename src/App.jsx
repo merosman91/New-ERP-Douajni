@@ -1,59 +1,67 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FilePlus, Coins, Menu } from 'lucide-react';
+import { LayoutDashboard, PlusSquare, PieChart, Settings, Syringe } from 'lucide-react';
+import { GlobalProvider, useGlobal } from './context/GlobalContext';
 import Dashboard from './pages/Dashboard';
-import DailyEntry from './pages/DailyEntry';
+import DailyLog from './pages/DailyLog';
 import Finance from './pages/Finance';
+// (Inventory & Settings pages can be simple placeholders for now)
 
-// مكون التنقل السفلي
 const BottomNav = () => {
   const location = useLocation();
-  const navClass = (path) => 
-    `flex flex-col items-center justify-center w-full h-full ${location.pathname === path ? 'text-emerald-600 border-t-2 border-emerald-600' : 'text-gray-400'}`;
+  const { data } = useGlobal();
+  const isWorker = data.settings.role === 'worker';
+
+  const NavItem = ({ to, icon: Icon, label }) => (
+    <Link to={to} className={`flex flex-col items-center justify-center w-full h-full ${location.pathname === to ? 'text-emerald-600' : 'text-gray-400'}`}>
+      <Icon size={24} strokeWidth={location.pathname === to ? 2.5 : 2} />
+      <span className="text-[10px] mt-1 font-medium">{label}</span>
+    </Link>
+  );
 
   return (
-    <div className="fixed bottom-0 left-0 w-full h-16 bg-white border-t border-gray-200 flex justify-between px-2 shadow-lg z-50">
-      <Link to="/" className={navClass('/')}>
-        <LayoutDashboard size={24} />
-        <span className="text-xs mt-1 font-medium">الرئيسية</span>
-      </Link>
-      <Link to="/entry" className={navClass('/entry')}>
-        <FilePlus size={24} />
-        <span className="text-xs mt-1 font-medium">سجل اليوم</span>
-      </Link>
-      <Link to="/finance" className={navClass('/finance')}>
-        <Coins size={24} />
-        <span className="text-xs mt-1 font-medium">المالية</span>
-      </Link>
+    <div className="fixed bottom-0 left-0 w-full h-18 bg-white border-t border-gray-200 flex justify-between px-2 pb-1 pt-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50">
+      <NavItem to="/" icon={LayoutDashboard} label="الرئيسية" />
+      <NavItem to="/log" icon={PlusSquare} label="تسجيل" />
+      
+      {!isWorker && <NavItem to="/finance" icon={PieChart} label="المالية" />}
+      
+      {/* صفحة الصحة والمخزون مدمجة للتبسيط */}
+      <NavItem to="/health" icon={Syringe} label="الصحة" /> 
+      
+      {!isWorker && <NavItem to="/settings" icon={Settings} label="إعدادات" />}
     </div>
   );
 };
 
+const PlaceholderPage = ({ title }) => (
+  <div className="p-10 text-center text-gray-500">
+    <h2 className="text-xl font-bold mb-2">{title}</h2>
+    <p>قيد التطوير...</p>
+  </div>
+);
+
 function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-50 font-sans pb-20" dir="rtl">
-        {/* Header */}
-        <header className="bg-emerald-700 text-white p-4 shadow-md sticky top-0 z-40">
-          <div className="flex justify-between items-center">
-            <h1 className="text-lg font-bold">ERP دواجن</h1>
-            <button className="p-1"><Menu size={24} /></button>
+    <GlobalProvider>
+      <Router>
+        <div className="min-h-screen bg-gray-100 font-sans text-right" dir="rtl">
+          <main className="p-4 max-w-md mx-auto min-h-screen bg-gray-50 shadow-2xl">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/log" element={<DailyLog />} />
+              <Route path="/finance" element={<Finance />} />
+              <Route path="/health" element={<PlaceholderPage title="الصحة والمخزون" />} />
+              <Route path="/settings" element={<PlaceholderPage title="الإعدادات" />} />
+            </Routes>
+          </main>
+          <div className="max-w-md mx-auto">
+             <BottomNav />
           </div>
-        </header>
-
-        <main className="p-4">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/entry" element={<DailyEntry />} />
-            <Route path="/finance" element={<Finance />} />
-          </Routes>
-        </main>
-
-        <BottomNav />
-      </div>
-    </Router>
+        </div>
+      </Router>
+    </GlobalProvider>
   );
 }
 
 export default App;
- 
