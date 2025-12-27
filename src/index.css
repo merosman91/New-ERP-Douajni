@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* تنسيقات إضافية لتحسين تجربة الموبايل */
+body {
+  background-color: #f3f4f6;
+  -webkit-tap-highlight-color: transparent; /* إزالة الوميض عند اللمس في الموبايل */
+  overflow-x: hidden;
+}
+
+/* تحسين شكل شريط التمرير */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #10b981;
+  border-radius: 10px;
+}
+
+/* منع تحديد النصوص بالخطأ أثناء استخدام التطبيق كـ App */
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
