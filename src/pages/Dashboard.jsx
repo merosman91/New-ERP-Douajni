@@ -1,96 +1,85 @@
-import React, { useEffect, useState } from 'react';
-import { calculateKPIs, getLogsByCycle, loadData } from '../store/dataStore';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Download, Share2, AlertTriangle, TrendingUp } from 'lucide-react';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import React from 'react';
+import { useGlobal } from '../context/GlobalContext';
+import { AlertTriangle, Droplets, Scale, Activity, TrendingUp } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
-  const [kpis, setKpis] = useState(null);
-  const [chartData, setChartData] = useState([]);
-  const activeCycleId = 'cycle-1'; // يمكن تغييره ليكون ديناميكياً
+  const { data, getKPIs } = useGlobal();
+  const kpi = getKPIs();
+  const { settings } = data;
 
-  useEffect(() => {
-    setKpis(calculateKPIs(activeCycleId));
-    setChartData(getLogsByCycle(activeCycleId));
-  }, []);
-
-  const exportPDF = () => {
-    const doc = new jsPDF();
-    doc.text("Poultry Farm Report", 10, 10);
-    
-    // جدول البيانات
-    const tableData = chartData.map(log => [log.date, log.mortality, log.feed, log.weight]);
-    doc.autoTable({
-      head: [['Date', 'Mortality', 'Feed (kg)', 'Weight (g)']],
-      body: tableData,
-    });
-    doc.save('report.pdf');
-  };
-
-  const shareWhatsApp = () => {
-    if(!kpis) return;
-    const text = `📊 تقرير المزرعة:\n- النافق: ${kpis.mortalityRate}%\n- التحويل (FCR): ${kpis.fcr}\n- الوزن الحالي: ${kpis.currentAvgWeight}g`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-  };
-
-  if (!kpis) return <div className="text-center mt-10">جاري تحميل البيانات...</div>;
+  // تنبيهات ذكية
+  const nextVaccine = data.vaccines.find(v => v.day >= kpi.age && !v.done);
 
   return (
-    <div className="space-y-6">
-      {/* بطاقات المؤشرات */}
+    <div className="space-y-5 pb-20">
+      {/* رأس الصفحة */}
+      <div className="bg-emerald-700 text-white p-6 rounded-b-3xl shadow-lg -mx-4 -mt-4 mb-4">
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-xl font-bold">{settings.farmName}</h1>
+            <p className="opacity-80 text-sm">الدورة: {data.cycle.breed}</p>
+          </div>
+          <div className="text-center bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+            <span className="block text-xs opacity-80">العمر</span>
+            <span className="text-2xl font-bold">{kpi.age}</span>
+            <span className="text-xs">/{settings.targetDays} يوم</span>
+          </div>
+        </div>
+      </div>
+
+      {/* التنبيهات */}
+      {nextVaccine && (
+        <div className="bg-amber-50 border-r-4 border-amber-500 p-4 rounded shadow-sm flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="text-amber-500" />
+            <div>
+              <p className="font-bold text-gray-800">تنبيه تحصين</p>
+              <p className="text-sm text-gray-600">موعد {nextVaccine.name} (يوم {nextVaccine.day})</p>
+            </div>
+          </div>
+          <span className="text-xs bg-amber-200 text-amber-800 px-2 py-1 rounded">قريباً</span>
+        </div>
+      )}
+
+      {/* بطاقات المؤشرات السريعة */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white p-4 rounded-2xl shadow-sm border border-emerald-100">
-          <p className="text-gray-500 text-xs">معدل التحويل (FCR)</p>
-          <div className="flex items-center justify-between mt-2">
-            <span className="text-2xl font-bold text-emerald-700">{kpis.fcr}</span>
-            <TrendingUp size={20} className="text-emerald-500" />
+        <div className="bg-white p-4 rounded-xl shadow-sm border-b-4 border-blue-500">
+          <div className="flex items-center gap-2 text-gray-500 text-xs mb-1">
+            <Scale size={16} /> متوسط الوزن
           </div>
+          <p className="text-2xl font-bold text-gray-800">{kpi.lastWeight} <span className="text-sm font-normal">جم</span></p>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl shadow-sm border border-red-100">
-          <p className="text-gray-500 text-xs">نسبة النفوق</p>
-          <div className="flex items-center justify-between mt-2">
-            <span className="text-2xl font-bold text-red-600">{kpis.mortalityRate}%</span>
-            <AlertTriangle size={20} className="text-red-500" />
+        <div className="bg-white p-4 rounded-xl shadow-sm border-b-4 border-green-500">
+          <div className="flex items-center gap-2 text-gray-500 text-xs mb-1">
+            <Activity size={16} /> معامل التحويل
           </div>
-          <p className="text-[10px] text-gray-400 mt-1">العدد: {kpis.totalDead} طير</p>
+          <p className="text-2xl font-bold text-gray-800">{kpi.fcr}</p>
+          <p className="text-[10px] text-gray-400">الهدف: 1.5</p>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl shadow-sm border border-blue-100">
-          <p className="text-gray-500 text-xs">متوسط الوزن</p>
-          <span className="text-2xl font-bold text-blue-700">{kpis.currentAvgWeight} <span className="text-sm">جم</span></span>
+        <div className="bg-white p-4 rounded-xl shadow-sm border-b-4 border-red-500">
+          <div className="flex items-center gap-2 text-gray-500 text-xs mb-1">
+            <AlertTriangle size={16} /> العدد الحي
+          </div>
+          <p className="text-2xl font-bold text-gray-800">{kpi.currentCount}</p>
+          <p className="text-xs text-red-500 mt-1">نافق: {kpi.totalDead} ({kpi.mortalityRate}%)</p>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl shadow-sm border border-orange-100">
-          <p className="text-gray-500 text-xs">استهلاك العلف</p>
-          <span className="text-2xl font-bold text-orange-700">{kpis.totalFeed} <span className="text-sm">كجم</span></span>
+        <div className="bg-white p-4 rounded-xl shadow-sm border-b-4 border-purple-500">
+          <div className="flex items-center gap-2 text-gray-500 text-xs mb-1">
+            <TrendingUp size={16} /> التكلفة/طائر
+          </div>
+          <p className="text-2xl font-bold text-gray-800">{kpi.costPerBird}</p>
+          <p className="text-[10px] text-gray-400">تراكمي</p>
         </div>
       </div>
 
-      {/* الرسم البياني */}
-      <div className="bg-white p-4 rounded-2xl shadow-sm h-72">
-        <h3 className="font-bold text-gray-700 mb-4 text-sm">منحنى نمو الوزن</h3>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="date" hide />
-            <YAxis orientation="right" tick={{fontSize: 10}} />
-            <Tooltip />
-            <Line type="monotone" dataKey="weight" stroke="#059669" strokeWidth={3} dot={{r: 4}} />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* أزرار الإجراءات */}
-      <div className="flex gap-3">
-        <button onClick={exportPDF} className="flex-1 bg-gray-800 text-white py-3 rounded-xl flex justify-center items-center gap-2 shadow-lg">
-          <Download size={18} /> تقرير PDF
-        </button>
-        <button onClick={shareWhatsApp} className="flex-1 bg-green-500 text-white py-3 rounded-xl flex justify-center items-center gap-2 shadow-lg">
-          <Share2 size={18} /> واتساب
-        </button>
-      </div>
+      {/* زر العمل السريع */}
+      <Link to="/log" className="block w-full bg-emerald-600 text-white p-4 rounded-xl shadow-lg text-center font-bold text-lg hover:bg-emerald-700 transition">
+        تسجيل بيانات اليوم
+      </Link>
     </div>
   );
 };
