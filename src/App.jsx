@@ -5,7 +5,8 @@ import { GlobalProvider, useGlobal } from './context/GlobalContext';
 import Dashboard from './pages/Dashboard';
 import DailyLog from './pages/DailyLog';
 import Finance from './pages/Finance';
-// (Inventory & Settings pages can be simple placeholders for now)
+import Inventory from './pages/Inventory';
+import Settings from './pages/Settings';
 
 const BottomNav = () => {
   const location = useLocation();
@@ -23,6 +24,7 @@ const BottomNav = () => {
     <div className="fixed bottom-0 left-0 w-full h-18 bg-white border-t border-gray-200 flex justify-between px-2 pb-1 pt-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50">
       <NavItem to="/" icon={LayoutDashboard} label="الرئيسية" />
       <NavItem to="/log" icon={PlusSquare} label="تسجيل" />
+      <NavItem to="/inventory" icon={Package} label="المخزون" />
       
       {!isWorker && <NavItem to="/finance" icon={PieChart} label="المالية" />}
       
@@ -51,8 +53,8 @@ function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/log" element={<DailyLog />} />
               <Route path="/finance" element={<Finance />} />
-              <Route path="/health" element={<PlaceholderPage title="الصحة والمخزون" />} />
-              <Route path="/settings" element={<PlaceholderPage title="الإعدادات" />} />
+              <Route path="/inventory" element={<Inventory />} />
+              <Route path="/settings" element={<Settings />} />
             </Routes>
           </main>
           <div className="max-w-md mx-auto">
