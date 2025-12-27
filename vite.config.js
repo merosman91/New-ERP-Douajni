@@ -10,20 +10,15 @@ export default defineConfig({
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
         name: 'نظام إدارة الدواجن ERP',
-        short_name: 'PoultryERP',
-        description: 'تطبيق لإدارة مزارع الدواجن اللاحم',
-        theme_color: '#ffffff',
+        short_name: 'PoultryPro',
+        description: 'إدارة مزارع الدواجن اللاحم',
+        theme_color: '#059669',
+        background_color: '#f3f4f6',
+        display: 'standalone',
+        orientation: 'portrait',
         icons: [
-          {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
+          { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' }
         ]
       }
     })
