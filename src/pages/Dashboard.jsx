@@ -7,6 +7,50 @@ const Dashboard = () => {
   const { data, getKPIs } = useGlobal();
   const kpi = getKPIs();
   const { settings } = data;
+  
+  // 1. منطق تنبيهات اللقاحات
+  const todayVaccine = data.vaccines.find(v => v.day === kpi.age);
+  const upcomingVaccine = data.vaccines.find(v => v.day > kpi.age && v.day <= kpi.age + 2);
+
+  // 2. منطق تنبيهات العلف
+  const isLowFeed = kpi.feedStock < 200; // تنبيه إذا أقل من 200 كيلو
+
+  return (
+    <div className="space-y-5 pb-20">
+      {/* ... (الجزء العلوي كما هو) ... */}
+
+      {/* منطقة التنبيهات الذكية (تظهر فقط عند الحاجة) */}
+      <div className="space-y-2">
+        
+        {/* تنبيه اللقاح اليوم */}
+        {todayVaccine && !todayVaccine.done && (
+          <div className="bg-red-500 text-white p-4 rounded-xl shadow-lg animate-pulse flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <Syringe size={24} />
+              <div>
+                <p className="font-bold">مطلوب اليوم!</p>
+                <p className="text-sm">لقاح: {todayVaccine.name}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* تنبيه نفاذ العلف */}
+        {isLowFeed && (
+          <div className="bg-amber-100 border-r-4 border-amber-500 p-4 rounded shadow-sm">
+             <p className="font-bold text-amber-800 flex items-center gap-2">
+               <AlertTriangle size={18}/> انتبه: المخزون منخفض
+             </p>
+             <p className="text-sm text-amber-700">متبقي {kpi.feedStock} كجم فقط.</p>
+          </div>
+        )}
+      </div>
+
+      {/* ... (باقي البطاقات كما هي) ... */}
+    </div>
+  );
+};
+
 
   // تنبيهات ذكية
   const nextVaccine = data.vaccines.find(v => v.day >= kpi.age && !v.done);
