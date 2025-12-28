@@ -5,10 +5,9 @@
   "main": "src/main.js",
   "type": "module",
   "scripts": {
-    "start": "npx live-server . --port=3000",
     "dev": "npx live-server . --port=3000 --watch=src",
-    "build": "node build.js",
-    "deploy": "npm run build && vercel --prod"
+    "build": "echo 'No build step required for static site'",
+    "start": "npx serve . -p 3000"
   },
   "keywords": ["poultry", "erp", "management", "agriculture"],
   "author": "Your Name",
@@ -18,6 +17,6 @@
   },
   "devDependencies": {
     "live-server": "^1.2.2",
-    "vercel": "^28.16.0"
+    "serve": "^14.0.0"
   }
 }
